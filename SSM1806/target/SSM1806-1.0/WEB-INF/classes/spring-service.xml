@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:content="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!--扫描service层的类-->
+    <content:component-scan base-package="com.qfedu.service"></content:component-scan>
+    <!--配置事务-->
+    <!--1、配置事务管理器-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+    <!--2、配置事务特性-->
+    <tx:advice transaction-manager="transactionManager" id="interceptor">
+        <tx:attributes>
+            <!--标记匹配的那些方法方法使用什么样的事务-->
+            <!--name 方法名
+            propagation：事务的传播行为
+            取值说明：标记如何使用事务  七种取值
+            REQUIRED 使用事务，如果有事务就使用，不存在就新建事务
+            REQUIRES_NEW 使用事务 新建事务，如果有事务就挂起
+             NEVER 不支持事务 ，如果存在事务就抛异常
+             NOT_SUPPORTED 不是用事务，如果存在事务就挂起
+             SUPPORTS 支持事务，如果有事务就使用，如果没有事务就不使用事务
+             MANDATORY 支持事务，有事务就使用，如果没有事务就抛异常
+             NESTED 支持事务，如果事务存在就新建一个嵌套事务执行，不存在就新建事务
+
+             isolation：事务的隔离级别
+             timeout:超时时间
+             rollback-for：回滚异常类-->
+            <tx:method name="*" propagation="NESTED" isolation="REPEATABLE_READ" />
+        </tx:attributes>
+    </tx:advice>
+    <!--3、配置AOP-->
+    <aop:config>
+        <aop:pointcut id="pt" expression="execution(* com.qfedu.service.impl.*(..))"></aop:pointcut>
+        <aop:advisor advice-ref="interceptor" pointcut-ref="pt"></aop:advisor>
+    </aop:config>
+</beans>
